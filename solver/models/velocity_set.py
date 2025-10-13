@@ -18,6 +18,24 @@ class VelocitySet:
     weights: np.ndarray  # Shape: (Q,)
     cs: float
 
+    def bounce_back_idx(
+        self, axis_idx: int, positive_normal: bool
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if positive_normal:
+            target_idx = np.where(self.directions[:, axis_idx] > 0)[0]
+        else:
+            target_idx = np.where(self.directions[:, axis_idx] < 0)[0]
+        target_vectors = self.directions[target_idx]
+        source_vectors = -target_vectors
+
+        idx_list = []
+        for v in source_vectors:
+            matching_rows = np.all(self.directions == v, axis=1)
+            idx_list.append(np.where(matching_rows)[0])
+        source_idx = np.concatenate(idx_list)
+
+        return source_idx, target_idx
+
 
 class VelocitySetFactory:
     _sets = {
@@ -171,6 +189,7 @@ class VelocitySetFactory:
 
         return VelocitySet(
             set_type=set_type,
+            order=config["order"],
             cs=config["cs"],
             directions=config["directions"],
             weights=config["weights"],

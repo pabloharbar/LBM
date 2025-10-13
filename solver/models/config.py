@@ -10,7 +10,34 @@ from solver.utils import read_yaml
 
 class BCTypes(str, Enum):
     bounce_back = "Bounce-Back"
-    zhou_he = "Zhou-He"
+    zou_he = "Zou-He"
+
+
+class DomainFaces(str, Enum):
+    x_plus = "x_plus"
+    x_minus = "x_minus"
+    y_plus = "y_plus"
+    y_minus = "y_minus"
+    z_plus = "z_plus"
+    z_minus = "z_minus"
+
+    @property
+    def inside_normal_value(self):
+        if not hasattr(self, "_normal"):
+            self._normal = 1 if "minus" in self.value else -1
+        return self._normal
+
+    @property
+    def normal_axis(self):
+        if not hasattr(self, "_n_axis"):
+            self._n_axis = ["x", "y", "z"].index(self.value.split("_")[0])
+        return self._n_axis
+
+    def get_target_index(self, domain_sizes: list[int]):
+        if self.inside_normal_value == -1:
+            return 0
+        else:
+            return domain_sizes[self.normal_axis] - 1
 
 
 class BoundaryConditionConfig(BaseModel):
@@ -32,6 +59,7 @@ class BoundaryConditionConfig(BaseModel):
 
 
 class LBMSimulationConfig(BaseModel):
+    sim_name: str = Field(..., title="Name of the simulation")
     domain_size: list[int] = Field(..., title="Domain size as [Nx, Ny, Nz] or [Nx, Ny]")
     n_timesteps: int = Field(..., title="Number of timesteps", gt=0)
     export_frequency: int = Field(
@@ -39,19 +67,17 @@ class LBMSimulationConfig(BaseModel):
     )
     velocity_set: str = Field(..., title="Velocity set to use")
     tau: float = Field(..., title="Tau value for BGK operator", gt=0.5)
-    boundary_conditions: dict[str, BoundaryConditionConfig] = Field(
+    boundary_conditions: dict[DomainFaces, BoundaryConditionConfig] = Field(
         ..., description="Boundary conditions definition"
     )
 
     @model_validator(mode="after")
     def validate_bcs(self) -> LBMSimulationConfig:
         n_dim = len(self.domain_size)
-        expected_bc_keys = ["x_plus", "x_minus", "y_plus", "y_minus"]
-        if n_dim == 3:
-            expected_bc_keys += ["z_plus", "z_minus"]
-        if sorted([k for k in self.boundary_conditions.keys()]) != sorted(
-            expected_bc_keys
-        ):
+        expected_bc_keys = sorted(
+            [f.value for f in DomainFaces if "z" not in f.value or n_dim == 3]
+        )
+        if sorted([k for k in self.boundary_conditions.keys()]) != expected_bc_keys:
             raise ValueError(f"Expected boundary conditions keys {expected_bc_keys}")
         return self
 
@@ -61,8 +87,6 @@ class LBMSimulationConfig(BaseModel):
             raise Exception(
                 "Domain size must have 2 or 3 dimensions and all must be positive integers"
             )
-        if len(vals) < 3:
-            vals.append(1)
         return vals
 
     @classmethod
