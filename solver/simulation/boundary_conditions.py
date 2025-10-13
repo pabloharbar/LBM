@@ -27,13 +27,6 @@ def bounce_back(
             :, :, target_index, source_vel_set_idx
         ]
 
-    # # Bottom wall (y=0)
-    # f[:, 0, [2, 5, 6]] = f[:, 0, [4, 7, 8]]
-    # # Left wall (x=0)
-    # f[0, :, [1, 5, 8]] = f[0, :, [3, 7, 6]]
-    # # Right wall (x=Nx-1)
-    # f[Nx - 1, :, [3, 6, 7]] = f[Nx - 1, :, [1, 8, 5]]
-
 
 def zou_he(
     velocity_set: VelocitySet,

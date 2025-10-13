@@ -32,7 +32,9 @@ class SimulationManager:
     def apply_bcs(self):
         for bc_face, bc_cfg in self.cfg.boundary_conditions.items():
             if bc_cfg.bc_type == BCTypes.bounce_back:
-                bounce_back(self.cfg.velocity_set, bc_face)
+                bounce_back(
+                    self.cfg.velocity_set, bc_face, self.domain.size, self.sim_data.f
+                )
             elif bc_cfg.bc_type == BCTypes.zou_he:
                 zou_he(self.cfg.velocity_set, bc_face)
 
