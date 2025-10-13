@@ -16,6 +16,7 @@ def equilibrium(
     )
     e = velocity_set.directions
     w = velocity_set.weights
+    cs2 = velocity_set.cs**2
 
     H_0 = 1
     H_1 = (
@@ -24,18 +25,13 @@ def equilibrium(
         + e[:, 2] * uz[:, :, np.newaxis]
     ) / velocity_set.cs**2
     H_2 = (
-        ux[:, :, np.newaxis] ** 2 * (e[:, 0] ** 2 - 1)
-        + ux[:, :, np.newaxis] * uy[:, :, np.newaxis] * (e[:, 0] * e[:, 1])
-        + uy[:, :, np.newaxis] ** 2 * (e[:, 1] ** 2 - 1)
+        ux[:, :, np.newaxis] ** 2 * (e[:, 0] ** 2 - cs2)
+        + uy[:, :, np.newaxis] ** 2 * (e[:, 1] ** 2 - cs2)
+        + uz[:, :, np.newaxis] ** 2 * (e[:, 2] ** 2 - cs2)
+        + 2 * ux[:, :, np.newaxis] * uy[:, :, np.newaxis] * (e[:, 0] * e[:, 1])
+        + 2 * ux[:, :, np.newaxis] * uz[:, :, np.newaxis] * (e[:, 0] * e[:, 2])
+        + 2 * uy[:, :, np.newaxis] * uz[:, :, np.newaxis] * (e[:, 1] * e[:, 2])
     ) / (2 * velocity_set.cs**4)
-    H_3 = 0
-    # if velocity_set.order > 2:
-    #     (e[:, 0] * ux[:, :, np.newaxis] + e[:, 1] * uy[:, :, np.newaxis]) ** 3
-    #     H_3 = (
-    #         ux[:, :, np.newaxis] ** 2 * (e[:, 0] ** 2 - 1)
-    #         + ux[:, :, np.newaxis] * uy[:, :, np.newaxis] * (e[:, 0] * e[:, 1])
-    #         + uy[:, :, np.newaxis] ** 2 * (e[:, 1] ** 2 - 1)
-    #     ) / (6 * velocity_set.cs**6)
 
-    eq_pop = w * rho[:, :, np.newaxis] * (H_0 + H_1 + H_2 + H_3)
+    eq_pop = w * rho[:, :, np.newaxis] * (H_0 + H_1 + H_2)
     return eq_pop
