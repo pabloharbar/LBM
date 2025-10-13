@@ -1,0 +1,27 @@
+sim_name: example
+domain_size: [100, 100]
+n_timesteps: 10000
+export_frequency: 100
+velocity_set: "D2Q9" # "D3Q19", "D3Q27"
+tau: 0.65
+boundary_conditions:
+  x_minus:
+    type: "Bounce-Back"
+  x_plus:
+    type: "Zhou-He"
+    u: 0
+    v: 0
+    w: 0
+    rho: 0
+  y_minus:
+    type: "Inamuro"
+    u: 0
+    v: 0
+    w: 0
+    rho: 0
+  y_plus:
+    type: "Bounce-Back"
+  z_minus:
+    type: "Bounce-Back"
+  z_plus:
+    type: "Bounce-Back"
