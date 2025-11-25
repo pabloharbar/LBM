@@ -3,6 +3,7 @@ new
 .python-version
 uv.lock
 *.vts
+*.vtk
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
